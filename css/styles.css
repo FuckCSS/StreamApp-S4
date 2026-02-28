@@ -212,11 +212,21 @@ input, select { font-family: inherit; }
 @media (max-width: 860px) {
   .results-grid { grid-template-columns: repeat(3, 1fr); }
 }
-@media (max-width: 580px) {
-  .results-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 600px) {
+  .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+  }
+  .card-body {
+    padding: 0.5rem 0.625rem 0.625rem;
+  }
+  .card-title {
+    font-size: 0.8125rem;
+  }
+  .card-year {
+    font-size: 0.6875rem;
+  }
 }
-@media (max-width: 360px) {
-  .results-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- Card ---------- */
@@ -808,3 +818,615 @@ input, select { font-family: inherit; }
 ::-webkit-scrollbar-track { background: #030712; }
 ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #374151; }
+/* ============================================================
+   StreamApp — styles.css ADDITIONS
+   Player overlay & iframe container
+   ============================================================ */
+
+/* ---------- Player Overlay ---------- */
+.player-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(3, 7, 18, 0.96);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.player-box {
+  background: #0a0f1e;
+  border: 1px solid rgba(55, 65, 81, 0.7);
+  border-radius: 1.25rem;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 96vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+  animation: slideUp 0.2s ease;
+}
+
+/* ---------- Player Header ---------- */
+.player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.125rem;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.4);
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.player-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.player-thumb {
+  width: 36px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  flex-shrink: 0;
+}
+
+.player-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.player-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.player-title-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f9fafb;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-close-btn {
+  position: static;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ---------- 16:9 iframe container ---------- */
+.iframe-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: #000;
+  flex-shrink: 0;
+}
+
+.iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.iframe-spinner {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 7, 18, 0.7);
+  pointer-events: none;
+}
+
+/* ---------- Player Controls Bar ---------- */
+.player-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.875rem;
+  padding: 0.875rem 1.125rem;
+  border-top: 1px solid rgba(55, 65, 81, 0.4);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.player-tv-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.player-source-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 180px;
+}
+
+.player-source-group label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.player-source-select {
+  max-width: 320px;
+}
+
+.player-newtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+@media (max-width: 600px) {
+  .player-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .player-source-select { max-width: 100%; }
+  .player-newtab-btn { justify-content: center; }
+  .player-header { flex-wrap: wrap; }
+}
+/* ============================================================
+   StreamApp — styles.css ADDITIONS
+   Media page, episode grid, season tabs, uBlock banner
+   ============================================================ */
+
+/* ---------- View Media ---------- */
+.view-media {
+  width: 100%;
+  max-width: 1152px;
+  padding-bottom: 3rem;
+}
+
+/* ---------- Back Link ---------- */
+.media-back-row {
+  padding: 1rem 0 0.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #9ca3af;
+  transition: color 0.15s;
+  text-decoration: none;
+}
+
+.back-link:hover { color: #c7d2fe; }
+
+/* ---------- uBlock Banner ---------- */
+.ublock-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  color: #fcd34d;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.ublock-link {
+  color: #fbbf24;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.ublock-link:hover { color: #fde68a; }
+
+.ublock-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #fcd34d;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.ublock-dismiss:hover { opacity: 1; }
+
+/* ---------- Media Header ---------- */
+.media-header {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.media-poster {
+  width: 160px;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border: 1px solid rgba(55, 65, 81, 0.5);
+}
+
+.media-poster-ph {
+  width: 160px;
+  flex-shrink: 0;
+  aspect-ratio: 2/3;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.media-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-top: 0.25rem;
+}
+
+.media-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f9fafb;
+  line-height: 1.2;
+}
+
+.media-overview {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.media-rating {
+  font-size: 0.8125rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.media-genres {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+@media (max-width: 580px) {
+  .media-header { flex-direction: column; align-items: flex-start; }
+  .media-poster { width: 120px; }
+  .media-poster-ph { width: 120px; }
+  .media-title { font-size: 1.375rem; }
+}
+
+/* ---------- Source Row ---------- */
+.source-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.source-row-group {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.newtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ---------- Player Section ---------- */
+.player-section {
+  margin-bottom: 1.5rem;
+}
+
+.iframe-wrap {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  background: #000;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(55, 65, 81, 0.4);
+}
+
+.iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.iframe-spinner {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 7, 18, 0.7);
+  pointer-events: none;
+}
+
+/* ---------- Season Tabs ---------- */
+.season-tabs-wrap {
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.season-tabs-wrap::-webkit-scrollbar { display: none; }
+
+.season-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.season-tab {
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  color: #9ca3af;
+  padding: 0.5rem 1.125rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.season-tab:hover {
+  color: #f3f4f6;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.season-tab-active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+
+/* ---------- Episode Grid ---------- */
+.episode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.875rem;
+}
+
+@media (max-width: 400px) {
+  .episode-grid { grid-template-columns: 1fr; }
+}
+
+.ep-card {
+  display: flex;
+  gap: 0.875rem;
+  background: rgba(17, 24, 39, 0.7);
+  border: 1px solid rgba(55, 65, 81, 0.4);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  padding: 0.625rem;
+}
+
+.ep-card:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.ep-card-active {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.ep-thumb-wrap {
+  position: relative;
+  width: 140px;
+  flex-shrink: 0;
+  aspect-ratio: 16/9;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #111827;
+}
+
+.ep-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ep-thumb-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+.ep-number {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: rgba(0,0,0,0.75);
+  color: #e5e7eb;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.03em;
+}
+
+.ep-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.125rem 0;
+}
+
+.ep-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ep-desc {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .ep-thumb-wrap { width: 100px; }
+}
+
+/* ---------- TV Section ---------- */
+.tv-section {
+  margin-top: 0.5rem;
+}
+/* ============================================================
+   About Page — additions
+   ============================================================ */
+
+/* Two-column layout for Data & Playback cards */
+.about-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 520px) {
+  .about-two-col { grid-template-columns: 1fr; }
+}
+
+/* Source name pills */
+.about-source-pill {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.625rem;
+  letter-spacing: 0.01em;
+}
+
+/* Technical card key/value grid */
+.about-tech-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.about-tech-row {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.about-tech-key {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+.about-tech-val {
+  color: #9ca3af;
+}
+/* Fix for mobile "zoomed in" / edge-to-edge issue */
+@media (max-width: 600px) {
+  /* 1. Ensure the main container doesn't allow horizontal scroll */
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* 2. Force the hero to stay within the screen with a 1rem gap on each side */
+  .search-hero {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box;
+  }
+
+  /* 3. Ensure the search bar itself doesn't overflow */
+  .search-input-wrap {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* 4. Fix the results grid cutting off */
+  .results-section {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .results-grid {
+    gap: 0.75rem; /* Slightly tighter gap for small screens */
+  }
+}

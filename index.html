@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StreamApp — Watch Movies & TV</title>
+  <title>StreamApp — Watch Movies &amp; TV</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +14,7 @@
   <!-- Navbar -->
   <header id="navbar">
     <div class="navbar-inner">
-      <a href="index.html" class="logo">
+      <a href="#/" class="logo">
         <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="32" height="32" rx="8" fill="#6366f1"/>
           <polygon points="12,9 24,16 12,23" fill="white"/>
@@ -27,57 +27,155 @@
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="flex-1 flex flex-col items-center px-4">
+  <!-- App Shell — JS swaps content here -->
+  <main id="app" class="flex-1 flex flex-col items-center px-4">
 
-    <!-- Search Hero -->
-    <section class="search-hero">
-      <h1 class="search-title">What do you want to watch?</h1>
-      <p class="search-subtitle">Search millions of movies and TV shows</p>
-      <form id="search-form" class="search-form" autocomplete="off">
-        <div class="search-input-wrap">
-          <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="9" cy="9" r="6" stroke="#6b7280" stroke-width="1.5"/>
-            <path d="M13.5 13.5L17 17" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <input
-            type="text"
-            id="search-input"
-            class="search-input"
-            placeholder="Search movies, TV shows..."
-            spellcheck="false"
-          />
-          <button type="submit" class="search-btn">Search</button>
+    <!-- ========== SEARCH VIEW (default) ========== -->
+    <div id="view-search">
+
+      <section class="search-hero">
+        <h1 class="search-title">What do you want to watch?</h1>
+        <p class="search-subtitle">Search millions of movies and TV shows</p>
+        <form id="search-form" class="search-form" autocomplete="off">
+          <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="9" cy="9" r="6" stroke="#6b7280" stroke-width="1.5"/>
+              <path d="M13.5 13.5L17 17" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Search movies, TV shows..." spellcheck="false" />
+            <button type="submit" class="search-btn">Search</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="results-section" class="results-section hidden">
+        <div id="results-header" class="results-header">
+          <span id="results-count" class="results-count"></span>
         </div>
-      </form>
-    </section>
+        <div id="results-grid" class="results-grid"></div>
+        <div id="load-more-wrap" class="load-more-wrap hidden">
+          <button id="load-more-btn" class="load-more-btn">Load More</button>
+        </div>
+      </section>
 
-    <!-- Results Section -->
-    <section id="results-section" class="results-section hidden">
-      <div id="results-header" class="results-header">
-        <span id="results-count" class="results-count"></span>
+      <div id="state-empty" class="state-message hidden">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="state-icon">
+          <circle cx="32" cy="32" r="28" stroke="#374151" stroke-width="2"/>
+          <path d="M22 32h20M32 22v20" stroke="#374151" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p>No results found. Try a different search.</p>
       </div>
-      <div id="results-grid" class="results-grid"></div>
-      <div id="load-more-wrap" class="load-more-wrap hidden">
-        <button id="load-more-btn" class="load-more-btn">Load More</button>
+      <div id="state-loading" class="state-message hidden">
+        <div class="spinner"></div>
+        <p>Searching...</p>
       </div>
-    </section>
+      <div id="state-error" class="state-message hidden">
+        <p id="error-text">Something went wrong. Please try again.</p>
+      </div>
 
-    <!-- Empty / Error States -->
-    <div id="state-empty" class="state-message hidden">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="state-icon">
-        <circle cx="32" cy="32" r="28" stroke="#374151" stroke-width="2"/>
-        <path d="M22 32h20M32 22v20" stroke="#374151" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <p>No results found. Try a different search.</p>
     </div>
-    <div id="state-loading" class="state-message hidden">
-      <div class="spinner"></div>
-      <p>Searching...</p>
+    <!-- END view-search -->
+
+    <!-- ========== MEDIA VIEW (movie or TV) ========== -->
+    <div id="view-media" class="view-media hidden">
+
+      <!-- Back link -->
+      <div class="media-back-row">
+        <a href="#/" id="back-link" class="back-link">
+          <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M13 4L7 10l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to results
+        </a>
+      </div>
+
+      <!-- uBlock warning banner (dismissible) -->
+      <div id="ublock-banner" class="ublock-banner">
+        <svg class="warning-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2L18.66 17H1.34L10 2Z" stroke="#f59e0b" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M10 8v4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="10" cy="14.5" r="0.75" fill="#f59e0b"/>
+        </svg>
+        <span>Some sources may not work correctly without an ad blocker. We recommend <a href="https://ublockorigin.com" target="_blank" rel="noopener" class="ublock-link">uBlock Origin</a>.</span>
+        <button id="ublock-dismiss" class="ublock-dismiss" aria-label="Dismiss">&times;</button>
+      </div>
+
+      <!-- Media Header -->
+      <div class="media-header">
+        <img id="media-poster" src="" alt="" class="media-poster" />
+        <div id="media-poster-ph" class="media-poster-ph hidden"></div>
+        <div class="media-meta">
+          <div class="modal-badge-row">
+            <span id="media-badge" class="modal-badge"></span>
+            <span id="media-year" class="modal-year"></span>
+            <span id="media-rating" class="media-rating"></span>
+            <span id="media-genres" class="media-genres"></span>
+          </div>
+          <h1 id="media-title" class="media-title"></h1>
+          <p id="media-overview" class="media-overview"></p>
+        </div>
+      </div>
+
+      <!-- Source selector row -->
+      <div class="source-row">
+        <div class="server-group source-row-group">
+          <label for="media-source-select">Source</label>
+          <select id="media-source-select" class="server-select">
+            <option value="alpha">Alpha (VidSrc.cc v2)</option>
+            <option value="bravo">Bravo (VidSrc.cc v3)</option>
+            <option value="charlie">Charlie (MoviesAPI Club)</option>
+            <option value="delta">Delta (MoviesAPI To)</option>
+            <option value="echo">Echo (vidsrc-embed.ru)</option>
+            <option value="foxtrot">Foxtrot (vidsrc-embed.su)</option>
+            <option value="golf">Golf (vidsrcme.su)</option>
+            <option value="hotel">Hotel (vsrc.su)</option>
+            <option value="india">India (Videasy — Default)</option>
+            <option value="juliet">Juliet (Videasy — Netflix Skin)</option>
+            <option value="kilo">Kilo (vidfast.pro)</option>
+            <option value="lima">Lima (vidfast.in)</option>
+            <option value="mike">Mike (vidfast.io)</option>
+            <option value="november">November (vidfast.me)</option>
+            <option value="oscar">Oscar (vidfast.net)</option>
+            <option value="papa">Papa (vidfast.pm)</option>
+            <option value="quebec">Quebec (vidfast.xyz)</option>
+            <option value="romeo">Romeo (VidLink — Default)</option>
+            <option value="sierra">Sierra (VidLink — JW Player)</option>
+          </select>
+        </div>
+        <button id="newtab-btn" class="btn-secondary newtab-btn">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" style="flex-shrink:0">
+            <path d="M11 3H17V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17 3L9 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M9 5H4C3.44772 5 3 5.44772 3 6V16C3 16.5523 3.44772 17 4 17H14C14.5523 17 15 16.5523 15 16V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Open in New Tab
+        </button>
+      </div>
+
+      <!-- Player -->
+      <div class="player-section">
+        <div class="iframe-wrap">
+          <div class="iframe-spinner" id="iframe-spinner">
+            <div class="spinner"></div>
+          </div>
+          <iframe id="player-iframe" src="" frameborder="0" allowfullscreen
+            allow="encrypted-media; autoplay; fullscreen; picture-in-picture"
+            title="Video Player"></iframe>
+        </div>
+      </div>
+
+      <!-- TV: Season Tabs + Episode Grid -->
+      <div id="tv-section" class="tv-section hidden">
+        <div class="season-tabs-wrap">
+          <div id="season-tabs" class="season-tabs"></div>
+        </div>
+        <div id="episodes-loading" class="state-message hidden">
+          <div class="spinner"></div>
+          <p>Loading episodes...</p>
+        </div>
+        <div id="episode-grid" class="episode-grid"></div>
+      </div>
+
     </div>
-    <div id="state-error" class="state-message hidden">
-      <p id="error-text">Something went wrong. Please try again.</p>
-    </div>
+    <!-- END view-media -->
 
   </main>
 
@@ -88,82 +186,6 @@
       <span class="footer-copy">Movie &amp; TV data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a>. Video served via external providers.</span>
     </div>
   </footer>
-
-  <!-- Modal -->
-  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-box">
-      <button id="modal-close" class="modal-close" aria-label="Close">&times;</button>
-
-      <div class="modal-content">
-        <!-- Poster -->
-        <div class="modal-poster-wrap">
-          <img id="modal-poster" src="" alt="" class="modal-poster" />
-          <div id="modal-poster-placeholder" class="modal-poster-placeholder hidden">
-            <span id="modal-poster-title-placeholder"></span>
-          </div>
-        </div>
-
-        <!-- Info -->
-        <div class="modal-info">
-          <div class="modal-badge-row">
-            <span id="modal-type-badge" class="modal-badge"></span>
-            <span id="modal-year" class="modal-year"></span>
-          </div>
-          <h2 id="modal-title" class="modal-title"></h2>
-          <p id="modal-overview" class="modal-overview"></p>
-
-          <!-- TV Season/Episode -->
-          <div id="tv-controls" class="tv-controls hidden">
-            <div class="tv-inputs">
-              <div class="input-group">
-                <label for="season-input">Season</label>
-                <input type="number" id="season-input" class="num-input" value="1" min="1" max="99" />
-              </div>
-              <div class="input-group">
-                <label for="episode-input">Episode</label>
-                <input type="number" id="episode-input" class="num-input" value="1" min="1" max="999" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Server Selector -->
-          <div class="server-group">
-            <label for="server-select">Server</label>
-            <select id="server-select" class="server-select">
-              <option value="1">Rakan — Best Quality</option>
-              <option value="2">Bard — New Releases</option>
-              <option value="3">Xayah — New Releases</option>
-              <option value="4">Ekko — 4K</option>
-              <option value="5">Naafiri — 4K</option>
-            </select>
-          </div>
-
-          <!-- Warning Banner -->
-          <div class="warning-banner">
-            <svg class="warning-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 2L18.66 17H1.34L10 2Z" stroke="#f59e0b" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M10 8v4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="10" cy="14.5" r="0.75" fill="#f59e0b"/>
-            </svg>
-            <span>This will open an external source in a new tab. We recommend using <strong>uBlock Origin</strong> for the best experience.</span>
-          </div>
-
-          <!-- Actions -->
-          <div class="modal-actions">
-            <button id="open-btn" class="btn-primary">
-              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" class="btn-icon">
-                <path d="M11 3H17V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M17 3L9 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M9 5H4C3.44772 5 3 5.44772 3 6V16C3 16.5523 3.44772 17 4 17H14C14.5523 17 15 16.5523 15 16V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              Open in New Tab
-            </button>
-            <button id="cancel-btn" class="btn-secondary">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script src="js/app.js"></script>
 </body>
