@@ -12,6 +12,16 @@
   <nav id="navbar">
     <div class="navbar-inner">
       <a href="#/" class="logo">
+        <svg class="logo-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#6366f1"/>
+              <stop offset="1" stop-color="#4f46e5"/>
+            </linearGradient>
+          </defs>
+          <rect x="2.5" y="2.5" width="27" height="27" rx="8" fill="url(#lg)"/>
+          <path d="M13 11.2c0-.9 1-1.5 1.8-1l8.2 4.8c.8.5.8 1.6 0 2.1l-8.2 4.8c-.8.5-1.8-.1-1.8-1z" fill="white" opacity="0.92"/>
+        </svg>
         <span class="logo-text">StreamApp</span>
       </a>
       <div style="display:flex;gap:0.25rem;align-items:center;">
@@ -51,6 +61,16 @@
         </form>
       </div>
 
+      <!-- Continue Watching -->
+      <section id="cw-section" class="cw-section hidden">
+        <div class="cw-header">
+          <span class="cw-title">Continue Watching</span>
+        </div>
+        <div class="cw-row-wrap">
+          <div id="cw-row" class="cw-row"></div>
+        </div>
+      </section>
+
       <div id="state-loading" class="state-message hidden" aria-live="polite">
         <div class="spinner"></div>
         <p>Searching…</p>
@@ -87,19 +107,23 @@
       </div>
 
       <div class="media-header">
-        <div style="flex-shrink:0;">
+        <div class="media-poster-col">
           <img id="media-poster" class="media-poster hidden" alt="" />
           <div id="media-poster-ph" class="media-poster-ph hidden"></div>
         </div>
         <div class="media-meta">
-          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-            <span id="media-badge" class="modal-badge"></span>
-            <span id="media-year" class="modal-year"></span>
-            <span id="media-rating" class="media-rating"></span>
+          <div class="media-meta-top">
+            <h2 id="media-title" class="media-title"></h2>
+            <p id="media-overview" class="media-overview"></p>
           </div>
-          <div id="media-genres" class="media-genres"></div>
-          <h2 id="media-title" class="media-title"></h2>
-          <p id="media-overview" class="media-overview"></p>
+          <div class="media-meta-bottom">
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+              <span id="media-badge" class="modal-badge"></span>
+              <span id="media-year" class="modal-year"></span>
+              <span id="media-rating" class="media-rating"></span>
+            </div>
+            <div id="media-genres" class="media-genres"></div>
+          </div>
         </div>
       </div>
 

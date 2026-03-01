@@ -1619,3 +1619,325 @@ input, select { font-family: inherit; }
   .discover-section-title { font-size: 0.9375rem; }
   .browse-title    { font-size: 1.125rem; }
 }
+/* ============================================================
+   Continue Watching — Taller & More Compact Cards
+   ============================================================ */
+.cw-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0.5rem auto 2rem;
+  padding: 0 1rem;
+}
+
+.cw-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.cw-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.cw-row-wrap {
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar for cleaner look */
+  -ms-overflow-style: none;
+  padding-bottom: 12px;
+  margin: 0 -1rem; /* Bleed to edges on mobile */
+  padding: 0 1rem 12px;
+}
+
+.cw-row-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.cw-row {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Card: Taller (120px) and narrower (220px) */
+.cw-card {
+  flex-shrink: 0;
+  width: 220px; 
+  cursor: pointer;
+  position: relative;
+}
+
+.cw-card-inner {
+  display: flex;
+  position: relative;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: #1e293b;
+  border: 1px solid #334155;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 120px; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.cw-card:hover .cw-card-inner {
+  border-color: #6366f1;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.5);
+  background: #243146;
+}
+
+.cw-poster-col {
+  flex-shrink: 0;
+  width: 80px; /* Wider poster for the taller height */
+  height: 120px;
+  overflow: hidden;
+  background: #0f172a;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.cw-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.cw-card:hover .cw-poster {
+  transform: scale(1.05);
+}
+
+.cw-text-col {
+  flex: 1;
+  min-width: 0; /* Critical for ellipsis to work */
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.cw-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  width: fit-content;
+  margin-bottom: 0.2rem;
+  background: #334155;
+  color: #cbd5e1;
+}
+
+/* Title with Ellipsis (...) */
+.cw-text-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  line-height: 1.2;
+  width: 100%;
+}
+
+.cw-text-sub {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.cw-overlay {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  opacity: 0;
+  z-index: 10;
+  transition: opacity 0.2s;
+}
+
+.cw-card:hover .cw-overlay {
+  opacity: 1;
+}
+
+.cw-remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f87171;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+}
+
+.cw-remove-btn:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.15);
+}
+
+@media (max-width: 600px) {
+  .cw-card { width: 200px; }
+  .cw-card-inner { height: 100px; }
+  .cw-poster-col { width: 66px; height: 100px; }
+  .cw-text-col { padding: 0.75rem; }
+  .cw-text-title { font-size: 0.875rem; }
+  .cw-text-sub { font-size: 0.75rem; }
+}
+/* ============================================================
+   Episode Grid — constrained thumbnails with name + description
+   ============================================================ */
+.episode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.875rem;
+}
+
+@media (max-width: 400px) {
+  .episode-grid { grid-template-columns: 1fr; }
+}
+
+.ep-card {
+  display: flex;
+  gap: 0.875rem;
+  background: rgba(17, 24, 39, 0.7);
+  border: 1px solid rgba(55, 65, 81, 0.4);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  padding: 0.65rem;
+}
+
+.ep-card:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
+.ep-card-active {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.ep-thumb-wrap {
+  position: relative;
+  width: 145px;
+  flex-shrink: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #111827;
+}
+
+.ep-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ep-thumb-ph {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+.ep-number {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: rgba(0,0,0,0.75);
+  color: #e5e7eb;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.03em;
+}
+
+.ep-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.2rem 0;
+}
+
+.ep-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f3f4f6;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ep-desc {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .ep-thumb-wrap { width: 105px; }
+  .ep-desc { -webkit-line-clamp: 2; }
+}
+/* ============================================================
+   Mobile Media Header — side-by-side layout
+   ============================================================ */
+.media-poster-col {
+  flex-shrink: 0;
+}
+
+.media-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.media-meta-top {
+  flex: 1;
+  min-height: 0;
+}
+
+.media-meta-bottom {
+  margin-top: auto;
+}
+
+.media-overview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 580px) {
+  .media-header {
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .media-poster-col {
+    width: 120px;
+  }
+
+  .media-poster,
+  .media-poster-ph {
+    width:

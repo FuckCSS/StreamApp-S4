@@ -2,8 +2,7 @@
    StreamApp — app.js
    Hash-based SPA: Search → Discover → Genre/Browse → Movie/TV
    ============================================================ */
-
-const TMDB_KEY  = '3d421899d5ce93db8ad4ae4591ccc130';
+const TMDB_KEY = '3d421899d5ce93db8ad4ae4591ccc130';
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE  = 'https://image.tmdb.org/t/p/w300';
 const IMG_LARGE = 'https://image.tmdb.org/t/p/w500';
@@ -53,31 +52,31 @@ const SOURCES = {
 
 // ---- TMDB Genre IDs ----
 const GENRES = [
-  { id: 28,    name: 'Action' },
-  { id: 35,    name: 'Comedy' },
-  { id: 18,    name: 'Drama' },
-  { id: 27,    name: 'Horror' },
+  { id: 28, name: 'Action' },
+  { id: 35, name: 'Comedy' },
+  { id: 18, name: 'Drama' },
+  { id: 27, name: 'Horror' },
   { id: 10749, name: 'Romance' },
-  { id: 878,   name: 'Sci-Fi' },
-  { id: 53,    name: 'Thriller' },
-  { id: 16,    name: 'Animation' },
-  { id: 99,    name: 'Documentary' },
-  { id: 14,    name: 'Fantasy' },
-  { id: 80,    name: 'Crime' },
-  { id: 12,    name: 'Adventure' },
+  { id: 878, name: 'Sci-Fi' },
+  { id: 53, name: 'Thriller' },
+  { id: 16, name: 'Animation' },
+  { id: 99, name: 'Documentary' },
+  { id: 14, name: 'Fantasy' },
+  { id: 80, name: 'Crime' },
+  { id: 12, name: 'Adventure' },
 ];
 
 // ---- State ----
-let currentQuery   = '';
-let currentPage    = 1;
-let totalPages     = 1;
-let allResults     = [];
-let mediaCache     = {};
-let seasonCache    = {};
-let activeMediaId  = null;
-let activeType     = null;
-let activeSeason   = 1;
-let activeEpisode  = 1;
+let currentQuery  = '';
+let currentPage   = 1;
+let totalPages    = 1;
+let allResults    = [];
+let mediaCache    = {};
+let seasonCache   = {};
+let activeMediaId = null;
+let activeType    = null;
+let activeSeason  = 1;
+let activeEpisode = 1;
 
 // Browse state
 let browseCategory   = null;
@@ -90,45 +89,79 @@ function saveSource(v)       { localStorage.setItem('sa_source', v); }
 function isUblockDismissed() { return localStorage.getItem('sa_ublock') === '1'; }
 function dismissUblock()     { localStorage.setItem('sa_ublock', '1'); }
 
+// ---- Continue Watching helpers ----
+const CW_KEY = 'sa_cw';
+const CW_MAX = 20;
+
+function getCW() {
+  try { return JSON.parse(localStorage.getItem(CW_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveCW(list) {
+  localStorage.setItem(CW_KEY, JSON.stringify(list.slice(0, CW_MAX)));
+}
+
+function addToCW(entry) {
+  let list = getCW();
+  list = list.filter(x => !(String(x.id) === String(entry.id) && x.type === entry.type));
+  list.unshift(entry);
+  saveCW(list);
+}
+
+function removeFromCW(id, type) {
+  let list = getCW();
+  list = list.filter(x => !(String(x.id) === String(id) && x.type === type));
+  saveCW(list);
+  renderCW();
+}
+
 // ---- DOM refs ----
-const viewSearch         = document.getElementById('view-search');
-const viewMedia          = document.getElementById('view-media');
-const viewDiscover       = document.getElementById('view-discover');
-const viewBrowse         = document.getElementById('view-browse');
-const searchForm         = document.getElementById('search-form');
-const searchInput        = document.getElementById('search-input');
-const resultsSection     = document.getElementById('results-section');
-const resultsGrid        = document.getElementById('results-grid');
-const resultsCount       = document.getElementById('results-count');
-const loadMoreWrap       = document.getElementById('load-more-wrap');
-const loadMoreBtn        = document.getElementById('load-more-btn');
-const stateEmpty         = document.getElementById('state-empty');
-const stateLoading       = document.getElementById('state-loading');
-const stateError         = document.getElementById('state-error');
-const errorText          = document.getElementById('error-text');
+const viewSearch    = document.getElementById('view-search');
+const viewMedia     = document.getElementById('view-media');
+const viewDiscover  = document.getElementById('view-discover');
+const viewBrowse    = document.getElementById('view-browse');
 
-const ublockBanner       = document.getElementById('ublock-banner');
-const ublockDismiss      = document.getElementById('ublock-dismiss');
-const mediaPoster        = document.getElementById('media-poster');
-const mediaPosterPh      = document.getElementById('media-poster-ph');
-const mediaBadge         = document.getElementById('media-badge');
-const mediaYear          = document.getElementById('media-year');
-const mediaRating        = document.getElementById('media-rating');
-const mediaGenres        = document.getElementById('media-genres');
-const mediaTitle         = document.getElementById('media-title');
-const mediaOverview      = document.getElementById('media-overview');
-const sourceSelect       = document.getElementById('media-source-select');
-const newtabBtn          = document.getElementById('newtab-btn');
-const playerIframe       = document.getElementById('player-iframe');
-const iframeSpinner      = document.getElementById('iframe-spinner');
-const tvSection          = document.getElementById('tv-section');
-const seasonTabs         = document.getElementById('season-tabs');
-const episodeGrid        = document.getElementById('episode-grid');
-const episodesLoading    = document.getElementById('episodes-loading');
+const searchForm    = document.getElementById('search-form');
+const searchInput   = document.getElementById('search-input');
+const resultsSection = document.getElementById('results-section');
+const resultsGrid   = document.getElementById('results-grid');
+const resultsCount  = document.getElementById('results-count');
+const loadMoreWrap  = document.getElementById('load-more-wrap');
+const loadMoreBtn   = document.getElementById('load-more-btn');
+const stateEmpty    = document.getElementById('state-empty');
+const stateLoading  = document.getElementById('state-loading');
+const stateError    = document.getElementById('state-error');
+const errorText     = document.getElementById('error-text');
 
-const genreChips         = document.getElementById('genre-chips');
-const browseGrid         = document.getElementById('browse-grid');
-const browseTitle        = document.getElementById('browse-title');
+const cwSection     = document.getElementById('cw-section');
+const cwRow         = document.getElementById('cw-row');
+
+const ublockBanner  = document.getElementById('ublock-banner');
+const ublockDismiss = document.getElementById('ublock-dismiss');
+
+const mediaPoster   = document.getElementById('media-poster');
+const mediaPosterPh = document.getElementById('media-poster-ph');
+const mediaBadge    = document.getElementById('media-badge');
+const mediaYear     = document.getElementById('media-year');
+const mediaRating   = document.getElementById('media-rating');
+const mediaGenres   = document.getElementById('media-genres');
+const mediaTitle    = document.getElementById('media-title');
+const mediaOverview = document.getElementById('media-overview');
+
+const sourceSelect  = document.getElementById('media-source-select');
+const newtabBtn     = document.getElementById('newtab-btn');
+const playerIframe  = document.getElementById('player-iframe');
+const iframeSpinner = document.getElementById('iframe-spinner');
+
+const tvSection       = document.getElementById('tv-section');
+const seasonTabs      = document.getElementById('season-tabs');
+const episodeGrid     = document.getElementById('episode-grid');
+const episodesLoading = document.getElementById('episodes-loading');
+
+const genreChips        = document.getElementById('genre-chips');
+const browseGrid        = document.getElementById('browse-grid');
+const browseTitle       = document.getElementById('browse-title');
 const browseLoadMoreWrap = document.getElementById('browse-load-more-wrap');
 const browseLoadMoreBtn  = document.getElementById('browse-load-more-btn');
 const browseLoadingEl    = document.getElementById('browse-loading');
@@ -180,6 +213,7 @@ function showSearchView() {
   activeMediaId = null;
   document.title = 'StreamApp — Watch Movies & TV';
   window.scrollTo(0, 0);
+  renderCW();
 }
 
 function showDiscoverView() {
@@ -201,7 +235,6 @@ function showBrowseView(category, param) {
   const label = getBrowseLabel(category, param);
   browseTitle.textContent = label;
   document.title = `${label} — StreamApp`;
-
   loadBrowsePage(true);
 }
 
@@ -226,6 +259,19 @@ async function showMediaView(type, id, s = 1, e = 1) {
     const detail = await fetchDetail(type, id);
     renderMediaHeader(type, detail);
 
+    // Save to Continue Watching
+    const cwEntry = {
+      id: id,
+      type: type,
+      title: type === 'tv' ? detail.name : detail.title,
+      poster: detail.poster_path || null,
+    };
+    if (type === 'tv') {
+      cwEntry.season = s;
+      cwEntry.episode = e;
+    }
+    addToCW(cwEntry);
+
     if (type === 'tv') {
       tvSection.classList.remove('hidden');
       renderSeasonTabs(detail, s);
@@ -233,13 +279,68 @@ async function showMediaView(type, id, s = 1, e = 1) {
     } else {
       tvSection.classList.add('hidden');
     }
-
     loadPlayer();
   } catch (err) {
     console.error(err);
     mediaTitle.textContent = 'Failed to load';
     mediaOverview.textContent = 'Could not fetch details from TMDB.';
   }
+}
+
+// ============================================================
+// Continue Watching
+// ============================================================
+function renderCW() {
+  const list = getCW();
+  if (list.length === 0) {
+    cwSection.classList.add('hidden');
+    return;
+  }
+  cwSection.classList.remove('hidden');
+  cwRow.innerHTML = '';
+
+  list.forEach(item => {
+    const poster = item.poster ? `${IMG_BASE}${item.poster}` : null;
+    const subtitle = item.type === 'tv' ? `S${item.season} E${item.episode}` : 'Movie';
+    const typeBadge = item.type === 'tv' ? 'TV' : 'Movie';
+    const badgeClass = item.type === 'tv' ? 'badge-tv' : 'badge-movie';
+    const target = item.type === 'tv'
+      ? `#/tv/${item.id}/${item.season}/${item.episode}`
+      : `#/movie/${item.id}`;
+
+    const card = document.createElement('div');
+    card.className = 'cw-card';
+    card.innerHTML = `
+      <div class="cw-card-inner">
+        <div class="cw-poster-col">
+          ${poster
+            ? `<img class="cw-poster" src="${poster}" alt="${escapeHtml(item.title)}" loading="lazy" />`
+            : `<div class="cw-poster-ph">${escapeHtml(item.title).slice(0, 2)}</div>`
+          }
+        </div>
+        <div class="cw-text-col">
+          <span class="cw-badge ${badgeClass}">${typeBadge}</span>
+          <span class="cw-text-title">${escapeHtml(item.title)}</span>
+          <span class="cw-text-sub">${subtitle}</span>
+        </div>
+        <div class="cw-overlay">
+          <button class="cw-remove-btn" aria-label="Remove from Continue Watching" title="Remove">✕</button>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', (ev) => {
+      if (ev.target.closest('.cw-remove-btn')) return;
+      window.location.hash = target;
+    });
+
+    card.querySelector('.cw-remove-btn').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      removeFromCW(item.id, item.type);
+    });
+
+    cwRow.appendChild(card);
+  });
 }
 
 // ============================================================
@@ -251,7 +352,6 @@ async function loadDiscoverContent() {
   if (discoverLoaded) return;
   discoverLoaded = true;
 
-  // Build genre chips
   genreChips.innerHTML = '';
   GENRES.forEach(g => {
     const chip = document.createElement('a');
@@ -267,8 +367,7 @@ async function loadDiscoverContent() {
       tmdbFetch('/movie/top_rated'),
       tmdbFetch('/tv/popular'),
     ]);
-
-    renderDiscoverRow('row-trending',   trending.results  || []);
+    renderDiscoverRow('row-trending', trending.results || []);
     renderDiscoverRow('row-top-movies', topMovies.results || []);
     renderDiscoverRow('row-popular-tv', popularTV.results || [], 'tv');
   } catch (err) {
@@ -289,17 +388,14 @@ function renderDiscoverRow(containerId, items, forceType) {
 
     const card = document.createElement('div');
     card.className = 'disc-card';
-
     card.innerHTML = `
-      <div class="disc-card-poster">
-        ${poster
-          ? `<img src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />`
-          : `<div class="card-placeholder">${escapeHtml(title)}</div>`
-        }
-        <span class="card-type-badge ${type === 'tv' ? 'badge-tv' : 'badge-movie'}">${type === 'tv' ? 'TV' : 'Movie'}</span>
-      </div>
-      <div class="disc-card-title">${escapeHtml(title)}</div>
-      ${year ? `<div class="disc-card-year">${year}</div>` : ''}
+      ${poster
+        ? `<img class="disc-poster" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />`
+        : `<div class="disc-poster-ph">${escapeHtml(title)}</div>`
+      }
+      <span class="disc-badge ${type === 'tv' ? 'badge-tv' : 'badge-movie'}">${type === 'tv' ? 'TV' : 'Movie'}</span>
+      <p class="disc-title">${escapeHtml(title)}</p>
+      ${year ? `<p class="disc-year">${year}</p>` : ''}
     `;
 
     const target = type === 'tv' ? `#/tv/${item.id}/1/1` : `#/movie/${item.id}`;
@@ -338,7 +434,6 @@ async function loadBrowsePage(reset) {
     const endpoint = getBrowseUrl(browseCategory.type, browseCategory.param, browsePage);
     const data = await tmdbFetch(endpoint);
     browseTotalPages = data.total_pages || 1;
-
     browseLoadingEl.classList.add('hidden');
 
     const items = (data.results || []).map(item => {
@@ -353,7 +448,6 @@ async function loadBrowsePage(reset) {
 
     if (browsePage < browseTotalPages) browseLoadMoreWrap.classList.remove('hidden');
     else browseLoadMoreWrap.classList.add('hidden');
-
   } catch (err) {
     browseLoadingEl.classList.add('hidden');
     console.error('Browse load error:', err);
@@ -363,7 +457,7 @@ async function loadBrowsePage(reset) {
 function renderBrowseCards(items) {
   items.forEach(item => {
     const isTV  = item.media_type === 'tv';
-    const title = isTV ? item.name  : item.title;
+    const title = isTV ? item.name : item.title;
     const date  = isTV ? item.first_air_date : item.release_date;
     const year  = date ? date.slice(0, 4) : '';
     const poster = item.poster_path ? `${IMG_BASE}${item.poster_path}` : null;
@@ -375,17 +469,13 @@ function renderBrowseCards(items) {
     card.setAttribute('aria-label', `${title}${year ? ' (' + year + ')' : ''}`);
 
     card.innerHTML = `
-      <div class="card-poster-wrap">
-        ${poster
-          ? `<img class="card-poster" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />`
-          : `<div class="card-placeholder">${escapeHtml(title)}</div>`
-        }
-        <span class="card-type-badge ${isTV ? 'badge-tv' : 'badge-movie'}">${isTV ? 'TV' : 'Movie'}</span>
-      </div>
-      <div class="card-body">
-        <div class="card-title">${escapeHtml(title)}</div>
-        ${year ? `<div class="card-year">${year}</div>` : ''}
-      </div>
+      ${poster
+        ? `<img class="card-poster" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />`
+        : `<div class="card-poster-ph">${escapeHtml(title)}</div>`
+      }
+      <span class="card-badge ${isTV ? 'badge-tv' : 'badge-movie'}">${isTV ? 'TV' : 'Movie'}</span>
+      <p class="card-title">${escapeHtml(title)}</p>
+      ${year ? `<p class="card-year">${year}</p>` : ''}
     `;
 
     const target = isTV ? `#/tv/${item.id}/1/1` : `#/movie/${item.id}`;
@@ -393,7 +483,6 @@ function renderBrowseCards(items) {
     card.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); window.location.hash = target; }
     });
-
     browseGrid.appendChild(card);
   });
 }
@@ -436,10 +525,10 @@ async function fetchSeason(tvId, seasonNum) {
 // Render Media Header
 // ============================================================
 function renderMediaHeader(type, detail) {
-  const isTV   = type === 'tv';
-  const title  = isTV ? detail.name : detail.title;
-  const date   = isTV ? detail.first_air_date : detail.release_date;
-  const year   = date ? date.slice(0, 4) : '';
+  const isTV  = type === 'tv';
+  const title = isTV ? detail.name : detail.title;
+  const date  = isTV ? detail.first_air_date : detail.release_date;
+  const year  = date ? date.slice(0, 4) : '';
   const poster = detail.poster_path ? `${IMG_LARGE}${detail.poster_path}` : null;
   const rating = detail.vote_average ? detail.vote_average.toFixed(1) : null;
   const genres = (detail.genres || []).map(g => g.name).join(', ');
@@ -457,9 +546,9 @@ function renderMediaHeader(type, detail) {
     mediaPosterPh.textContent = title;
   }
 
-  mediaBadge.textContent  = isTV ? 'TV Show' : 'Movie';
-  mediaBadge.className    = `modal-badge ${isTV ? 'badge-tv' : 'badge-movie'}`;
-  mediaYear.textContent   = year;
+  mediaBadge.textContent = isTV ? 'TV Show' : 'Movie';
+  mediaBadge.className   = `modal-badge ${isTV ? 'badge-tv' : 'badge-movie'}`;
+  mediaYear.textContent  = year;
   mediaRating.textContent = rating ? `⭐ ${rating}` : '';
   mediaGenres.textContent = genres;
   mediaTitle.textContent  = title;
@@ -491,7 +580,7 @@ function renderSeasonTabs(detail, activeSNum) {
 }
 
 // ============================================================
-// Episode Grid
+// Episode Grid — FIXED: uses correct class names matching CSS
 // ============================================================
 async function loadSeason(tvId, seasonNum, highlightEp) {
   episodeGrid.innerHTML = '';
@@ -503,7 +592,7 @@ async function loadSeason(tvId, seasonNum, highlightEp) {
     renderEpisodes(season.episodes || [], highlightEp);
   } catch (err) {
     episodesLoading.classList.add('hidden');
-    episodeGrid.innerHTML = '<p style="padding:1rem;color:#9ca3af;font-size:0.875rem;">Failed to load episodes.</p>';
+    episodeGrid.innerHTML = '<p style="color:#ef4444;">Failed to load episodes.</p>';
   }
 }
 
@@ -511,7 +600,7 @@ function renderEpisodes(episodes, highlightEp) {
   episodeGrid.innerHTML = '';
 
   episodes.forEach(ep => {
-    const card = document.createElement('div');
+    const card     = document.createElement('div');
     const isActive = ep.episode_number === highlightEp;
     card.className = `ep-card ${isActive ? 'ep-card-active' : ''}`;
     card.setAttribute('data-ep', ep.episode_number);
@@ -522,13 +611,13 @@ function renderEpisodes(episodes, highlightEp) {
       <div class="ep-thumb-wrap">
         ${still
           ? `<img class="ep-thumb" src="${still}" alt="" loading="lazy" />`
-          : `<div class="ep-thumb-ph"><svg viewBox="0 0 32 32" fill="none" width="28" height="28"><polygon points="12,8 24,16 12,24" fill="#374151"/></svg></div>`
+          : `<div class="ep-thumb-ph"></div>`
         }
         <span class="ep-number">E${ep.episode_number}</span>
       </div>
       <div class="ep-info">
-        <div class="ep-title">${escapeHtml(ep.name || `Episode ${ep.episode_number}`)}</div>
-        <div class="ep-desc">${escapeHtml(ep.overview || '')}</div>
+        <span class="ep-title">${escapeHtml(ep.name || 'Episode ' + ep.episode_number)}</span>
+        <p class="ep-desc">${escapeHtml(ep.overview || '')}</p>
       </div>
     `;
 
@@ -536,6 +625,18 @@ function renderEpisodes(episodes, highlightEp) {
       activeEpisode = ep.episode_number;
       updateHash();
       loadPlayer();
+
+      // Update CW with new episode
+      const cwList = getCW();
+      const existing = cwList.find(x => String(x.id) === String(activeMediaId) && x.type === 'tv');
+      if (existing) {
+        existing.season  = activeSeason;
+        existing.episode = activeEpisode;
+        const filtered = cwList.filter(x => !(String(x.id) === String(activeMediaId) && x.type === 'tv'));
+        filtered.unshift(existing);
+        saveCW(filtered);
+      }
+
       document.querySelectorAll('.ep-card').forEach(c => c.classList.remove('ep-card-active'));
       card.classList.add('ep-card-active');
       document.querySelector('.player-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -615,21 +716,26 @@ loadMoreBtn.addEventListener('click', () => {
 
 async function doSearch(reset) {
   showState('loading');
+
   try {
-    const url  = `${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=false`;
-    const res  = await fetch(url);
+    const url = `${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=false`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`TMDB error: ${res.status}`);
     const data = await res.json();
 
     totalPages = data.total_pages || 1;
+
     const filtered = (data.results || [])
       .filter(r => r.media_type === 'movie' || r.media_type === 'tv')
       .sort((a, b) => b.popularity - a.popularity);
 
     if (reset) allResults = filtered;
-    else       allResults = allResults.concat(filtered);
+    else allResults = allResults.concat(filtered);
 
     hideAllStates();
+
+    // Hide continue watching when showing results
+    cwSection.classList.add('hidden');
 
     if (allResults.length === 0) { showState('empty'); return; }
 
@@ -640,8 +746,7 @@ async function doSearch(reset) {
     renderCards(filtered);
 
     if (currentPage < totalPages) loadMoreWrap.classList.remove('hidden');
-    else                          loadMoreWrap.classList.add('hidden');
-
+    else loadMoreWrap.classList.add('hidden');
   } catch (err) {
     console.error(err);
     showState('error');
@@ -652,7 +757,7 @@ async function doSearch(reset) {
 function renderCards(items) {
   items.forEach(item => {
     const isTV  = item.media_type === 'tv';
-    const title = isTV ? item.name  : item.title;
+    const title = isTV ? item.name : item.title;
     const date  = isTV ? item.first_air_date : item.release_date;
     const year  = date ? date.slice(0, 4) : '';
     const poster = item.poster_path ? `${IMG_BASE}${item.poster_path}` : null;
@@ -664,17 +769,13 @@ function renderCards(items) {
     card.setAttribute('aria-label', `${title}${year ? ' (' + year + ')' : ''}`);
 
     card.innerHTML = `
-      <div class="card-poster-wrap">
-        ${poster
-          ? `<img class="card-poster" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />`
-          : `<div class="card-placeholder">${escapeHtml(title)}</div>`
-        }
-        <span class="card-type-badge ${isTV ? 'badge-tv' : 'badge-movie'}">${isTV ? 'TV' : 'Movie'}</span>
-      </div>
-      <div class="card-body">
-        <div class="card-title">${escapeHtml(title)}</div>
-        ${year ? `<div class="card-year">${year}</div>` : ''}
-      </div>
+      ${poster
+        ? `<img class="card-poster" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />`
+        : `<div class="card-poster-ph">${escapeHtml(title)}</div>`
+      }
+      <span class="card-badge ${isTV ? 'badge-tv' : 'badge-movie'}">${isTV ? 'TV' : 'Movie'}</span>
+      <p class="card-title">${escapeHtml(title)}</p>
+      ${year ? `<p class="card-year">${year}</p>` : ''}
     `;
 
     const target = isTV ? `#/tv/${item.id}/1/1` : `#/movie/${item.id}`;
@@ -682,7 +783,6 @@ function renderCards(items) {
     card.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); window.location.hash = target; }
     });
-
     resultsGrid.appendChild(card);
   });
 }
@@ -699,6 +799,7 @@ function hideAllStates() {
 function showState(state) {
   hideAllStates();
   resultsSection.classList.add('hidden');
+  cwSection.classList.add('hidden');
   if (state === 'loading') stateLoading.classList.remove('hidden');
   if (state === 'empty')   stateEmpty.classList.remove('hidden');
   if (state === 'error')   stateError.classList.remove('hidden');
